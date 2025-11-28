@@ -1,0 +1,144 @@
+name: Submit Wiki Entry to Data Store
+
+on:
+  pull_request:
+    types: [closed]
+    paths:
+      - 'entries/**/*.json'
+
+jobs:
+  submit-to-datastore:
+    # Only run if PR was merged (not just closed)
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+      
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            entries/**/*.json
+      
+      - name: Check if baseline PR
+        id: check-baseline
+        run: |
+          if echo "${{ join(github.event.pull_request.labels.*.name, ' ') }}" | grep -q "status:baseline"; then
+            echo "is_baseline=true" >> $GITHUB_OUTPUT
+            echo "Baseline PR detected - skipping data store update"
+          else
+            echo "is_baseline=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Process merged PR and update Cloudflare KV
+        if: steps.check-baseline.outputs.is_baseline == 'false'
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_KV_NAMESPACE_ID: ${{ secrets.CF_KV_NAMESPACE_ID }}
+        run: |
+          echo "Processing PR #${{ github.event.pull_request.number }}"
+          echo "PR Labels: ${{ join(github.event.pull_request.labels.*.name, ', ') }}"
+          
+          # Process each changed JSON file
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "Processing file: $file"
+            
+            if [ ! -f "$file" ]; then
+              echo "File not found, skipping: $file"
+              continue
+            fi
+            
+            # Read the new entry JSON content
+            NEW_ENTRY=$(cat "$file")
+            echo "New entry data loaded"
+            
+            # Fetch current KV data
+            echo "Fetching current KV data..."
+            CURRENT_DATA=$(curl -s -X GET \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/db" \
+              -H "Authorization: Bearer ${CF_API_TOKEN}")
+            
+            if [ $? -ne 0 ]; then
+              echo "❌ Failed to fetch KV data"
+              exit 1
+            fi
+            
+            echo "Current KV data fetched successfully"
+            
+            # Use jq to append new entry to entries array
+            UPDATED_DATA=$(echo "$CURRENT_DATA" | jq --argjson newEntry "$NEW_ENTRY" '
+              .entries += [$newEntry] |
+              .entries |= unique_by(.slug)
+            ')
+            
+            if [ $? -ne 0 ]; then
+              echo "❌ Failed to process JSON data"
+              exit 1
+            fi
+            
+            echo "Entry added to data structure"
+            
+            # Update KV with new data
+            echo "Updating Cloudflare KV..."
+            KV_RESPONSE=$(curl -s -X PUT \
+              "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/storage/kv/namespaces/${CF_KV_NAMESPACE_ID}/values/db" \
+              -H "Authorization: Bearer ${CF_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "$UPDATED_DATA")
+            
+            if echo "$KV_RESPONSE" | jq -e '.success == true' > /dev/null; then
+              echo "✅ Successfully updated Cloudflare KV"
+            else
+              echo "❌ Failed to update KV"
+              echo "Response: $KV_RESPONSE"
+              exit 1
+            fi
+            
+            # Extract entry info for comment
+            ENTRY_SLUG=$(echo "$NEW_ENTRY" | jq -r '.slug')
+            ENTRY_TITLE=$(echo "$NEW_ENTRY" | jq -r '.title')
+            
+            echo "Entry processed: $ENTRY_TITLE ($ENTRY_SLUG)"
+          done
+      
+      - name: Add success comment
+        if: success() && steps.check-baseline.outputs.is_baseline == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Wiki entry successfully added to data store!**\n\nThe entry has been processed and is now live on the website.'
+            })
+      
+      - name: Add failure comment  
+        if: failure() && steps.check-baseline.outputs.is_baseline == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Failed to add wiki entry to data store.**\n\nPlease contact the administrators for assistance.'
+            })
+      
+      - name: Skip baseline comment
+        if: steps.check-baseline.outputs.is_baseline == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⏭️ **Baseline PR - No action taken**\n\nThis is a baseline PR used for diff visualization. No data updates were performed.'
+            })
