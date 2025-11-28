@@ -1,0 +1,32 @@
+{
+  "slug": "first-wiki",
+  "title": "First wiki",
+  "sections": [
+    {
+      "id": "4e7dd954-02b7-4b36-8c56-926a248978ea",
+      "type": "custom",
+      "title": "First wiki",
+      "content": "### The Birth of Wikipedia: When Jimbo Wales Created the First Wiki Entry\n\nOn January 15, 2001, at exactly 18:07 UTC, Wikipedia co-founder Jimmy \"Jimbo\" Wales made history with a single, unassuming edit. Using the username \"Jimbo,\" he created a page titled \"U\" – a short article about the letter U in the English alphabet. The entire content of that very first Wikipedia entry read:\n\n> \"U is the twenty-first letter of the ISO basic Latin alphabet.\"\n\nThat was it. Nine words (ten if you count the letter itself). No images, no references, no infobox – just a plain statement typed into a brand-new UseModWiki installation running on a server paid for by Wales’s dot-com company Bomis.\n\nThe page \"U\" no longer exists in its original form (it was later merged, rewritten, and eventually deleted in 2003 as part of Wikipedia’s early cleanup efforts), but its creation marked the precise moment the world’s largest encyclopedia came into being. Before that edit, Nupedia – Wales and Larry Sanger’s earlier peer-reviewed project – had been struggling with a glacial pace of article approval. After that edit, everything changed.\n\nWales had installed the wiki software only days earlier, on January 10, initially as a side project or \"feeder\" for Nupedia. He announced the new wiki on the Nupedia mailing list with characteristic understatement:\n\n> \"Hello, fellow Nupedians! I have set up a wiki at http://www.nupedia.com/wiki/ … Humor me. Go there and add a little article.\"\n\nMost people ignored the message. A few curious souls poked around. Then Jimbo himself broke the ice with \"U\".\n\nThe second article ever created, just minutes later, was \"International Phonetic Alphabet\" by an anonymous user. The third was \"Poland\", also anonymous. Within hours, the site had a handful of stub articles. Within weeks, it had hundreds. Within a year, it had outgrown Nupedia entirely.\n\nWhat makes that first \"U\" entry symbolically perfect is how perfectly ordinary it was. No grand proclamation, no mission statement, no \"Hello World!\" in the programming sense. Just a simple fact about the alphabet – the kind of trivial knowledge that traditional encyclopedias would never bother including. In nine words, Wales accidentally demonstrated Wikipedia’s revolutionary premise: every piece of information, no matter how small, deserves a home if someone cares enough to write it down.\n\nToday, Wikipedia hosts over 60 million articles in more than 300 languages. The English edition alone has more than 6.7 million articles and 4 billion words – roughly the size of 3,000 printed volumes of the Encyclopædia Britannica. And it all started with one man typing nine words about the letter U on a quiet Monday evening in San Diego.\n\nThe page may be gone, but its legacy is immortal. As Wales himself later reflected with a laugh: \"We began with ‘U’. Not a very auspicious start, alphabetically speaking – but it got us to Z eventually.\"",
+      "order": 0,
+      "required": false
+    }
+  ],
+  "tags": [],
+  "authorId": "b68ead3b-9d3d-4fbe-9cfc-ca2b38db3b62",
+  "category": "General",
+  "views": 0,
+  "latestVersion": 1,
+  "language": "txt",
+  "type": "",
+  "license": "MIT",
+  "version": "0.0.1",
+  "documentationUrl": "https://monkeyknows.wiki",
+  "officialWebsiteUrl": "https://monkeyknows.wiki",
+  "forumUrl": "https://monkeyknows.wiki",
+  "tutorialVideoUrl": "https://monkeyknows.wiki",
+  "securityRisk": "",
+  "reliabilityIndex": 0,
+  "applicableScenarios": [],
+  "comparison": [],
+  "dependencyTopology": []
+}
